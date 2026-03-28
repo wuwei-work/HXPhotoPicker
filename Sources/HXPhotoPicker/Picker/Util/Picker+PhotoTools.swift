@@ -301,6 +301,9 @@ extension PhotoTools {
         config.photoList.cell.customSelectableCellClass = PhotoPickerWeChatViewCell.self
         config.photoList.cell.selectBox.selectedBackgroundColor = wxColor
         config.photoList.cell.selectBox.titleColor = .white
+        // Given: 即近项目的微信风格列表同样改为统一勾选图资源
+        // When: WeChat 主题初始化列表 cell 选择框
+        // Then: 也显式指定为 tick 样式，避免回退到数字序号样式
         config.photoList.cell.selectBox.style = .tick
         config.photoList.cell.selectBox.size = CGSize(width: 23, height: 23)
         
@@ -437,7 +440,10 @@ extension PhotoTools {
         config.photoList.cell.customSelectableCellClass = nil
         config.photoList.cell.selectBox.selectedBackgroundColor = redColor
         config.photoList.cell.selectBox.titleColor = .white
-        config.photoList.cell.selectBox.style = .number
+        // Given: 即近项目的照片列表选中框已经替换成自定义勾选图
+        // When: WeChat 风格配置初始化列表 cell 选择框
+        // Then: 显式指定为 tick 样式，统一图片资源表现
+        config.photoList.cell.selectBox.style = .tick
         
         config.photoList.assetNumber.filterContentColor = redColor
         

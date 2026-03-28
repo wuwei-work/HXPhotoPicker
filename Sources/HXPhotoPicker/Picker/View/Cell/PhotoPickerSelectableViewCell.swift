@@ -21,7 +21,12 @@ open class PhotoPickerSelectableViewCell: PhotoPickerViewCell {
     /// 配置颜色
     open override func configColor() {
         super.configColor()
-        selectControl.config = config.selectBox
+        // Given: 即近项目的勾选框资源只维护 tick 形态
+        // When: 列表 cell 绑定选择框配置
+        // Then: 强制切到 tick 样式，统一走图片化渲染
+        var selectBoxConfig = config.selectBox
+        selectBoxConfig.style = .tick
+        selectControl.config = selectBoxConfig
     }
     
     /// 添加视图
@@ -120,27 +125,21 @@ open class PhotoPickerSelectableViewCell: PhotoPickerViewCell {
                 return
             }
             selectMaskLayer.isHidden = false
-            if config.selectBox.style == .number {
-                let text = selectedTitle
-                let font = UIFont.mediumPingFang(ofSize: config.selectBox.titleFontSize)
-                let textHeight = text.height(ofFont: font, maxWidth: CGFloat(MAXFLOAT))
-                var textWidth = text.width(ofFont: font, maxHeight: textHeight)
-                selectControl.textSize = CGSize(width: textWidth, height: textHeight)
-                textWidth += boxHeight * 0.5
-                if textWidth < boxWidth {
-                    textWidth = boxWidth
-                }
-                selectControl.text = text
-                updateSelectControlSize(width: textWidth, height: boxHeight)
-            }else {
-                updateSelectControlSize(width: boxWidth, height: boxHeight)
-            }
+            // Given: 即近项目列表勾选框不再显示选中序号
+            // When: cell 进入选中状态
+            // Then: 清空文本并使用固定尺寸的 tick 图片框
+            selectControl.text = ""
+            selectControl.textSize = .zero
+            updateSelectControlSize(width: boxWidth, height: boxHeight)
         }else {
             if selectControl.isSelected == false &&
                 selectControl.size.equalTo(CGSize(width: boxWidth, height: boxHeight)) {
                 return
             }
             selectMaskLayer.isHidden = true
+            // Given: 取消选中后也要彻底移除数字序号留下的布局痕迹
+            // When: cell 回到未选中状态
+            // Then: 保持同样的固定勾选框尺寸，避免宽度抖动
             updateSelectControlSize(width: boxWidth, height: boxHeight)
         }
         selectControl.isSelected = isSelected

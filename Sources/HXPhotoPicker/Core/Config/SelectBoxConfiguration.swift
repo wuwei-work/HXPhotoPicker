@@ -15,7 +15,10 @@ public struct SelectBoxConfiguration {
     public var size: CGSize = CGSize(width: 25, height: 25)
     
     /// 选择框的样式
-    public var style: SelectBoxView.Style = .number
+    // Given: 即近项目默认使用图片化的勾选框资源
+    // When: 外部没有额外覆盖 selectBox 样式
+    // Then: 默认走 tick 方案，避免回退到数字序号样式
+    public var style: SelectBoxView.Style = .tick
     
     /// 标题的文字大小
     public var titleFontSize: CGFloat = 16

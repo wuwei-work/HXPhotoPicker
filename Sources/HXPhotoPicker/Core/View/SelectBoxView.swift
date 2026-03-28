@@ -19,11 +19,8 @@ public final class SelectBoxView: UIControl {
     
     public var text: String = "0" {
         didSet {
-            if config.style == .number {
-                textLayer.string = text
-                
-                updateTextLayerFrame()
-            }
+            textLayer.string = text
+            updateTextLayerFrame()
         }
     }
     public override var isSelected: Bool {
@@ -55,6 +52,15 @@ public final class SelectBoxView: UIControl {
     private var backgroundLayer: CAShapeLayer!
     private var textLayer: CATextLayer!
     private var tickLayer: CAShapeLayer!
+    // Given: 即近项目需要和 Android 保持一致的勾选框资源表现
+    // When: 选择框处于 tick 业务样式时
+    // Then: 使用 bundle 里的自定义图片渲染，而不是上游默认的图层绘制
+    private lazy var imageView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.contentMode = .scaleAspectFit
+        imageView.isUserInteractionEnabled = false
+        return imageView
+    }()
     
     public var config: SelectBoxConfiguration
     public init(_ config: SelectBoxConfiguration, frame: CGRect = .zero) {
@@ -64,6 +70,7 @@ public final class SelectBoxView: UIControl {
         layer.addSublayer(backgroundLayer)
         layer.addSublayer(textLayer)
         layer.addSublayer(tickLayer)
+        addSubview(imageView)
     }
     
     private func initViews() {
@@ -85,6 +92,7 @@ public final class SelectBoxView: UIControl {
         updateBackgroundLayerFrame()
         updateTickLayerFrame()
         updateTextLayerFrame()
+        updateImageViewFrame()
     }
     
     private func backgroundPath() -> CGPath {
@@ -111,6 +119,14 @@ public final class SelectBoxView: UIControl {
         return strokePath.cgPath
     }
     private func drawBackgroundLayer() {
+        // Given: 即近项目已经接管选中框视觉资源
+        // When: 当前样式是 tick
+        // Then: 隐藏上游默认背景层，避免和自定义图片叠加
+        if config.style == .tick {
+            backgroundLayer.isHidden = true
+            return
+        }
+        backgroundLayer.isHidden = false
         backgroundLayer.path = backgroundPath()
         if isSelected {
             let selectedBackgroundColor = config.selectedBackgroundColor
@@ -145,19 +161,11 @@ public final class SelectBoxView: UIControl {
         }
     }
     private func drawTextLayer() {
-        if config.style != .number {
-            textLayer.isHidden = true
-            return
-        }
-        if !isSelected {
-            textLayer.string = nil
-        }
-        
-        let font: UIFont = .mediumPingFang(ofSize: config.titleFontSize)
-        textLayer.font = CGFont(font.fontName as CFString)
-        textLayer.fontSize = config.titleFontSize
-        let color = PhotoManager.isDark ? config.titleDarkColor : config.titleColor
-        textLayer.foregroundColor = isHighlighted ? color.withAlphaComponent(0.4).cgColor : color.cgColor
+        // Given: 即近项目不再展示数字序号文本
+        // When: 选择框刷新文本层
+        // Then: 始终隐藏文本层
+        textLayer.isHidden = true
+        return
     }
     
     private func tickPath() -> CGPath {
@@ -172,7 +180,10 @@ public final class SelectBoxView: UIControl {
             tickLayer.isHidden = true
             return
         }
-        tickLayer.isHidden = !isSelected
+        // Given: 即近项目使用图片资源表达选中状态
+        // When: 上游 tick 样式仍然触发 tickLayer 绘制流程
+        // Then: 保持 tickLayer 隐藏，避免和图片样式重复
+        tickLayer.isHidden = true
         tickLayer.path = tickPath()
         tickLayer.lineWidth = config.tickWidth
         let color = PhotoManager.isDark ? config.tickDarkColor : config.tickColor
@@ -184,10 +195,12 @@ public final class SelectBoxView: UIControl {
         updateBackgroundLayerFrame()
         updateTickLayerFrame()
         updateTextLayerFrame()
+        updateImageViewFrame()
         
         drawBackgroundLayer()
         drawTextLayer()
         drawTickLayer()
+        drawImageView()
     }
     
     private func updateBackgroundLayerFrame() {
@@ -229,6 +242,29 @@ public final class SelectBoxView: UIControl {
             height: textHeight
         )
     }
+
+    private func drawImageView() {
+        if config.style != .tick {
+            imageView.isHidden = true
+            imageView.image = nil
+            return
+        }
+        // Given: 即近项目统一使用 tick 勾选图
+        // When: 根据选中态刷新选择框视觉
+        // Then: 在 normal / selected 两张资源之间切换
+        imageView.isHidden = false
+        imageView.alpha = isHighlighted ? 0.4 : 1
+        imageView.image = isSelected ? UIImage.image(for: "hx_picker_select_box_selected") : UIImage.image(for: "hx_picker_select_box_normal")
+    }
+
+    private func updateImageViewFrame() {
+        imageView.frame = CGRect(
+            x: (width - config.size.width) / 2,
+            y: (height - config.size.height) / 2,
+            width: config.size.width,
+            height: config.size.height
+        )
+    }
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
@@ -251,6 +287,7 @@ public final class SelectBoxView: UIControl {
                 drawBackgroundLayer()
                 drawTextLayer()
                 drawTickLayer()
+                drawImageView()
             }
         }
     }

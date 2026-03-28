@@ -146,42 +146,21 @@ extension PhotoPreviewViewController {
         let boxWidth = config.selectBox.size.width
         let boxHeight = config.selectBox.size.height
         if isSelected {
-            if config.selectBox.style == .number {
-                let text = String(
-                    format: "%d",
-                    arguments: [photoAsset.selectIndex + 1]
-                )
-                let font = UIFont.mediumPingFang(
-                    ofSize: config.selectBox.titleFontSize
-                )
-                let textHeight = text.height(
-                    ofFont: font,
-                    maxWidth: CGFloat(MAXFLOAT)
-                )
-                var textWidth = text.width(
-                    ofFont: font,
-                    maxHeight: textHeight
-                )
-                selectBoxControl.textSize = CGSize(
-                    width: textWidth,
-                    height: textHeight
-                )
-                textWidth += boxHeight * 0.5
-                if textWidth < boxWidth {
-                    textWidth = boxWidth
-                }
-                selectBoxControl.text = text
-                selectBoxControl.size = CGSize(
-                    width: textWidth,
-                    height: boxHeight
-                )
-            }else {
-                selectBoxControl.size = CGSize(
-                    width: boxWidth,
-                    height: boxHeight
-                )
-            }
+            // Given: 即近项目预览页的勾选框不再承载选中序号
+            // When: 资源进入选中状态
+            // Then: 清空文本并保持固定勾选框尺寸
+            selectBoxControl.text = ""
+            selectBoxControl.textSize = .zero
+            selectBoxControl.size = CGSize(
+                width: boxWidth,
+                height: boxHeight
+            )
         }else {
+            // Given: 未选中态也复用同一套图片化勾选框资源
+            // When: 资源取消选中
+            // Then: 同样清空文本并恢复固定尺寸，避免序号宽度残留
+            selectBoxControl.text = ""
+            selectBoxControl.textSize = .zero
             selectBoxControl.size = CGSize(
                 width: boxWidth,
                 height: boxHeight

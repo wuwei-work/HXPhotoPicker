@@ -279,17 +279,11 @@ class PhotoPreviewSelectedView: UIView,
         myCell.cancelRequest()
     }
     func getItemSize(photoAsset: PhotoAsset) -> CGSize {
-        let minWidth: CGFloat = 70 - collectionViewLayout.sectionInset.top - collectionViewLayout.sectionInset.bottom
-//        let maxWidth: CGFloat = minWidth / 9 * 16
-        let maxHeight: CGFloat = minWidth
-//        let aspectRatio = maxHeight / photoAsset.imageSize.height
-        let itemHeight = maxHeight
-//        var itemWidth = photoAsset.imageSize.width * aspectRatio
-//        if itemWidth < minWidth {
-           let itemWidth = minWidth
-//        }else if itemWidth > maxWidth {
-//            itemWidth = maxWidth
-//        }
+        // Given: 即近项目希望预览底部已选缩略图保持固定紧凑尺寸
+        // When: collectionView 计算每个 item 的大小
+        // Then: 始终返回 54x54，避免跟随资源比例波动
+        let itemWidth: CGFloat = 54
+        let itemHeight: CGFloat = 54
         return CGSize(width: itemWidth, height: itemHeight)
     }
     

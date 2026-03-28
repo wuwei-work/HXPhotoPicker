@@ -34,8 +34,10 @@ open class PhotoPreviewSelectedViewCell: UICollectionViewCell {
     open var tickColor: UIColor? {
         didSet {
             if !isPhotoList {
-                tickView.isHidden = false
-                tickView.tickLayer.strokeColor = tickColor?.cgColor
+                // Given: 即近项目预览选中态只保留绿色描边
+                // When: 上游尝试根据 tickColor 展示中心勾号
+                // Then: 持续隐藏 tickView，只保留加载指示器颜色同步
+                tickView.isHidden = true
             }
             photoView.kf_indicatorColor = tickColor
         }
@@ -60,11 +62,6 @@ open class PhotoPreviewSelectedViewCell: UICollectionViewCell {
     
     override init(frame: CGRect) {
         super.init(frame: frame)
-        if #available(iOS 26.0, *), !PhotoManager.isIos26Compatibility  {
-            layer.cornerRadius = 8
-            layer.masksToBounds = true
-        }
-        
         photoView = PhotoThumbnailView()
         photoView.imageView.size = size
         contentView.addSubview(photoView)
@@ -76,10 +73,24 @@ open class PhotoPreviewSelectedViewCell: UICollectionViewCell {
         
         selectedView = UIView()
         selectedView.isHidden = true
-        selectedView.backgroundColor = .black.withAlphaComponent(0.6)
+        // Given: 即近项目预览底部缩略图高亮改成透明蒙层 + 绿色描边
+        // When: 选中态视图初始化
+        // Then: 不再使用上游黑色半透明遮罩
+        selectedView.backgroundColor = .clear
+        selectedView.layer.borderWidth = 2
+        selectedView.layer.borderColor = UIColor(
+            red: 201.0 / 255.0,
+            green: 243.0 / 255.0,
+            blue: 0,
+            alpha: 1
+        ).cgColor
         contentView.addSubview(selectedView)
         
         tickView = TickView(frame: CGRect(x: 0, y: 0, width: 30, height: 30))
+        // Given: 即近项目不在预览缩略图中展示勾号
+        // When: 选中态附带 tickView 被创建
+        // Then: 立即隐藏 tickView
+        tickView.isHidden = true
         selectedView.addSubview(tickView)
     }
     

@@ -23,15 +23,20 @@ open class PhotoPickerWeChatViewCell: PhotoPickerSelectableViewCell {
     
     open override func updateSelectedState(isSelected: Bool, animated: Bool) {
         super.updateSelectedState(isSelected: isSelected, animated: animated)
-        titleLb.isHidden = !isSelected
-        titleLb.text = "\(photoAsset.selectIndex + 1)"
-        titleLb.height = 18
-        titleLb.width = titleLb.textWidth
-        titleLb.centerY = selectControl.centerY
+        // Given: 即近项目不保留微信风格左侧序号标签
+        // When: 选中态发生变化
+        // Then: 始终隐藏 titleLb 并清空布局痕迹
+        titleLb.isHidden = true
+        titleLb.text = nil
+        titleLb.frame = .zero
     }
     
     open override func layoutView() {
         super.layoutView()
-        titleLb.hxPicker_x = 10
+        // Given: 上游 layout 过程中可能重新布置 titleLb
+        // When: cell 重新布局
+        // Then: 再次收起 titleLb，避免序号标签回流显示
+        titleLb.isHidden = true
+        titleLb.frame = .zero
     }
 }
